@@ -6,3 +6,6 @@ run:
 
 clean:
 	rm ./renderer
+
+punt:
+	make build && make run

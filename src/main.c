@@ -7,12 +7,13 @@
 
 int previous_frame_time = 0;
 
+triangle_t triangles_to_render[N_MESH_FACES];
 vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
 float FOV_FACTOR = 120;
-vec3_t camera_position = {.x = 0, .y = 0, .z = -2.5};
+vec3_t camera_position = {.x = 0, .y = 0, .z = 2.5};
 vec3_t cube_rotation = {0, 0, 0};
-uint32_t cube_color = 0xFFFFFFFF;
+uint32_t drawing_color = 0xFFFFFFFF;
 
 void setup(void)
 {
@@ -62,13 +63,13 @@ void process_input(void)
                 IS_RUNNING = false;
             }
             if (event.key.keysym.sym == SDLK_DOWN)
-                cube_color = 0xFFFF0000;
+                drawing_color = 0xFFFF0000;
             if (event.key.keysym.sym == SDLK_UP)
-                cube_color = 0xFF00FF00;
+                drawing_color = 0xFF00FF00;
             if (event.key.keysym.sym == SDLK_LEFT)
-                cube_color = 0xFF0000FF;
+                drawing_color = 0xFF0000FF;
             if (event.key.keysym.sym == SDLK_DOWN)
-                cube_color = 0xFFFF0000;
+                drawing_color = 0xFFFF0000;
             break;
         default:
             break;
@@ -94,6 +95,7 @@ void update(void)
     }
     previous_frame_time = SDL_GetTicks();
 
+    triangle_t projected_triangle;
     // loop over all cube triangle faces
     for (int i = 0; i < N_MESH_FACES; i++)
     {
@@ -108,10 +110,22 @@ void update(void)
         for (int k = 0; k < 3; k++)
         {
             vec3_t transformed_vertex = face_vertices[k];
-            transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
+            transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
             transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
             transformed_vertex = vec3_rotate_z(transformed_vertex, cube_rotation.z);
+
+            // Move vertex away from screen
+            transformed_vertex.z -= camera_position.z;
+
+            // Project current vertes as a triangle
+            vec2_t projected_point = project_vec3_to_vec2(transformed_vertex);
+
+            // Scale and translate to middle of screen
+            projected_point.x += WINDOW_WIDTH / 2;
+            projected_point.y += WINDOW_HEIGHT / 2;
+            projected_triangle.points[k] = projected_point;
         }
+        triangles_to_render[i] = projected_triangle;
     };
 
     cube_rotation.y += 0.01;
@@ -123,10 +137,12 @@ void render(void)
     // Set screen to RED, on start the memory may be dirty from older memory allocations.
     // draw_grid(0x10FF0000);
 
-    for (int i = 0; i < N_POINTS; i++)
+    for (int i = 0; i < N_MESH_FACES; i++)
     {
-        vec2_t p = projected_points[i];
-        draw_rectangle(p.x + WINDOW_WIDTH / 2, p.y + WINDOW_HEIGHT / 2, 4, 4, cube_color);
+        triangle_t triangle = triangles_to_render[i];
+        draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color);
+        draw_rectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, drawing_color);
+        draw_rectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, drawing_color);
     }
 
     render_color_buffer();          // Put on screen whatever is in the color_buffer -> texture -> renderer.
