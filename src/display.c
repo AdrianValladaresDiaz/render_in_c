@@ -91,13 +91,22 @@ void render_color_buffer(void)
     SDL_RenderCopy(RENDERER, COLOR_BUFFER_TEXTURE, NULL, NULL);
 }
 
-void draw_rectangle(int start_x, int start_y, int end_x, int end_y, uint32_t color)
+void draw_pixel(int x, int y, uint32_t color)
 {
-    for (int x = start_x; x <= end_x; x++)
+    if (x >= 0 && x < WINDOW_WIDTH && y >= 0 && y < WINDOW_HEIGHT)
     {
-        for (int y = start_y; y <= end_y; y++)
+
+        COLOR_BUFFER[(WINDOW_WIDTH * y) + x] = color;
+    }
+}
+
+void draw_rectangle(int start_x, int start_y, int width, int height, uint32_t color)
+{
+    for (int x = start_x; x < (width + start_x); x++)
+    {
+        for (int y = start_y; y < (height + start_y); y++)
         {
-            COLOR_BUFFER[(WINDOW_WIDTH * y) + x] = color;
+            draw_pixel(x, y, color);
         }
     }
 }
