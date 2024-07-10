@@ -10,8 +10,8 @@ int previous_frame_time = 0;
 triangle_t triangles_to_render[N_MESH_FACES];
 vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
-float FOV_FACTOR = 120;
-vec3_t camera_position = {.x = 0, .y = 0, .z = 2.5};
+float FOV_FACTOR = 400;
+vec3_t camera_position = {.x = 0, .y = 0, .z = 5};
 vec3_t cube_rotation = {0, 0, 0};
 uint32_t drawing_color = 0xFFFFFFFF;
 
@@ -117,7 +117,7 @@ void update(void)
             // Move vertex away from screen
             transformed_vertex.z -= camera_position.z;
 
-            // Project current vertes as a triangle
+            // Project current vertex as a triangle
             vec2_t projected_point = project_vec3_to_vec2(transformed_vertex);
 
             // Scale and translate to middle of screen
@@ -143,6 +143,14 @@ void render(void)
         draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color);
         draw_rectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, drawing_color);
         draw_rectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, drawing_color);
+        draw_triangle(
+            triangle.points[0].x,
+            triangle.points[0].y,
+            triangle.points[1].x,
+            triangle.points[1].y,
+            triangle.points[2].x,
+            triangle.points[2].y,
+            drawing_color);
     }
 
     render_color_buffer();          // Put on screen whatever is in the color_buffer -> texture -> renderer.
