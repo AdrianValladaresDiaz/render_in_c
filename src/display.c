@@ -51,7 +51,6 @@ bool initialize_window(void)
 
 void destroy_window()
 {
-    free(COLOR_BUFFER);
     SDL_DestroyRenderer(RENDERER);
     SDL_DestroyWindow(WINDOW);
     SDL_DestroyTexture(COLOR_BUFFER_TEXTURE);

@@ -4,6 +4,7 @@
     "stdbool.h": "c",
     "display.h": "c",
     "vector.h": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "array": "cpp"
   }
 }

@@ -2,17 +2,17 @@
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
+#include "array.h"
 
 #define N_POINTS (9 * 9 * 9)
 
 int previous_frame_time = 0;
 
-triangle_t triangles_to_render[N_MESH_FACES];
+triangle_t *triangles_to_render = NULL;
 vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
 float FOV_FACTOR = 400;
 vec3_t camera_position = {.x = 0, .y = 0, .z = 5};
-vec3_t cube_rotation = {0, 0, 0};
 uint32_t drawing_color = 0xFFFFFFFF;
 
 void setup(void)
@@ -32,18 +32,7 @@ void setup(void)
 
     SDL_SetRenderDrawColor(RENDERER, 255, 0, 0, 255);
     SDL_RenderClear(RENDERER);
-    int point_count = 0;
-    for (float x = -1; x <= 1; x += 0.25)
-    {
-        for (float y = -1; y <= 1; y += 0.25)
-        {
-            for (float z = -1; z <= 1; z += 0.25)
-            {
-                vec3_t new_point = {x, y, z};
-                cube_points[point_count++] = new_point;
-            }
-        }
-    }
+    load_cube_mesh_data();
 };
 
 void process_input(void)
@@ -95,24 +84,27 @@ void update(void)
     }
     previous_frame_time = SDL_GetTicks();
 
+    triangles_to_render = NULL; // reinitialize the triangle array
     triangle_t projected_triangle;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
+
     // loop over all cube triangle faces
-    for (int i = 0; i < N_MESH_FACES; i++)
+    for (int i = 0; i < array_length(mesh.faces); i++)
     {
-        face_t mesh_face = mesh_faces[i];
         // get vertices (points) that construe the face
         vec3_t face_vertices[3] = {
-            mesh_vertices[mesh_face.a - 1], // mesh faces are NOT 0-indexed, start at 1
-            mesh_vertices[mesh_face.b - 1],
-            mesh_vertices[mesh_face.c - 1]};
+            cube_vertices[mesh.faces[i].a - 1], // mesh faces are NOT 0-indexed, start at 1
+            cube_vertices[mesh.faces[i].b - 1],
+            cube_vertices[mesh.faces[i].c - 1]};
 
         // Apply transforms to each face
         for (int k = 0; k < 3; k++)
         {
             vec3_t transformed_vertex = face_vertices[k];
-            transformed_vertex = vec3_rotate_x(transformed_vertex, cube_rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, cube_rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, cube_rotation.z);
+            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
+            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
+            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // Move vertex away from screen
             transformed_vertex.z -= camera_position.z;
@@ -125,11 +117,8 @@ void update(void)
             projected_point.y += WINDOW_HEIGHT / 2;
             projected_triangle.points[k] = projected_point;
         }
-        triangles_to_render[i] = projected_triangle;
+        array_push(triangles_to_render, projected_triangle);
     };
-
-    cube_rotation.y += 0.01;
-    cube_rotation.z += 0.01;
 };
 
 void render(void)
@@ -137,7 +126,7 @@ void render(void)
     // Set screen to RED, on start the memory may be dirty from older memory allocations.
     // draw_grid(0x10FF0000);
 
-    for (int i = 0; i < N_MESH_FACES; i++)
+    for (int i = 0; i < array_length(triangles_to_render); i++)
     {
         triangle_t triangle = triangles_to_render[i];
         draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color);
@@ -153,9 +142,18 @@ void render(void)
             drawing_color);
     }
 
-    render_color_buffer();          // Put on screen whatever is in the color_buffer -> texture -> renderer.
-    clear_color_buffer(0x00000000); // Set entire buffer to yellow as default
+    array_free(triangles_to_render); // Free the tringle array every frame
+    render_color_buffer();           // Put on screen whatever is in the color_buffer -> texture -> renderer.
+    clear_color_buffer(0x00000000);  // Set entire buffer to yellow as default
     SDL_RenderPresent(RENDERER);
+}
+
+// Frees dynamically allocated stuff
+void free_resources(void)
+{
+    free(mesh.faces);
+    free(mesh.vertices);
+    free(COLOR_BUFFER);
 }
 
 int main(void)
@@ -170,5 +168,6 @@ int main(void)
         render();
     }
     destroy_window();
+    free_resources();
     return 0;
 }
