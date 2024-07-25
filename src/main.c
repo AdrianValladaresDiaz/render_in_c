@@ -17,6 +17,7 @@ uint32_t drawing_color = 0xFFFFFFFF;
 
 void setup(void)
 {
+    printf("Starting setup\n");
     // Alocate memory for Color buffer, malloc returns pointer to first position.
     COLOR_BUFFER = malloc(WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
     if (!COLOR_BUFFER)
@@ -32,7 +33,8 @@ void setup(void)
 
     SDL_SetRenderDrawColor(RENDERER, 255, 0, 0, 255);
     SDL_RenderClear(RENDERER);
-    load_obj_data("./assets/cube.obj");
+    load_obj_data("./assets/f22.obj");
+    printf("Setup Done\n");
 };
 
 void process_input(void)
@@ -94,9 +96,9 @@ void update(void)
     {
         // get vertices (points) that construe the face
         vec3_t face_vertices[3] = {
-            cube_vertices[mesh.faces[i].a - 1], // mesh faces are NOT 0-indexed, start at 1
-            cube_vertices[mesh.faces[i].b - 1],
-            cube_vertices[mesh.faces[i].c - 1]};
+            mesh.vertices[mesh.faces[i].a - 1], // mesh faces are NOT 0-indexed, start at 1
+            mesh.vertices[mesh.faces[i].b - 1],
+            mesh.vertices[mesh.faces[i].c - 1]};
 
         // Apply transforms to each face
         for (int k = 0; k < 3; k++)
@@ -184,5 +186,6 @@ int main(void)
     }
     destroy_window();
     free_resources();
+    printf("hi");
     return 0;
 }

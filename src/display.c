@@ -13,6 +13,7 @@ int WINDOW_HEIGHT = 600;
  */
 bool initialize_window(void)
 {
+    printf("initializing window\n");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         fprintf(stderr, "Error initializing SDL\n");
@@ -42,9 +43,10 @@ bool initialize_window(void)
     RENDERER = SDL_CreateRenderer(WINDOW, -1, 0);
     if (!RENDERER)
     {
-        fprintf(stderr, "Error initializing SDL RENDERER");
+        fprintf(stderr, "Error initializing SDL RENDERER\n");
         return false;
     }
+    printf("initializing window successful\n");
 
     return true;
 }
