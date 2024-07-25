@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
@@ -9,7 +10,6 @@
 int previous_frame_time = 0;
 
 triangle_t *triangles_to_render = NULL;
-vec3_t cube_points[N_POINTS];
 vec2_t projected_points[N_POINTS];
 float FOV_FACTOR = 400;
 vec3_t camera_position = {.x = 0, .y = 0, .z = 5};
@@ -32,7 +32,7 @@ void setup(void)
 
     SDL_SetRenderDrawColor(RENDERER, 255, 0, 0, 255);
     SDL_RenderClear(RENDERER);
-    load_cube_mesh_data();
+    load_obj_data("./assets/cube.obj");
 };
 
 void process_input(void)
@@ -154,6 +154,21 @@ void free_resources(void)
     free(mesh.faces);
     free(mesh.vertices);
     free(COLOR_BUFFER);
+}
+
+int print_current_dir(void)
+{
+    char cwd[_PC_PATH_MAX + 500];
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
+    {
+        printf("Current working dir: %s\n", cwd);
+    }
+    else
+    {
+        perror("getcwd() error");
+        return 1;
+    }
+    return 0;
 }
 
 int main(void)

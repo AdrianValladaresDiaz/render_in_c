@@ -19,5 +19,8 @@ typedef struct
 
 extern mesh_t mesh;
 void load_cube_mesh_data(void);
+void load_obj_data(char *file_name);
+vec3_t parse_vertex_line(char *line);
+face_t parse_face_line(char *line);
 
 #endif
