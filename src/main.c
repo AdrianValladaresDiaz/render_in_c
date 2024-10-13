@@ -15,6 +15,17 @@ float FOV_FACTOR = 400;
 vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
 uint32_t drawing_color = 0xFFFFFFFF;
 
+void playground(void)
+{
+    // vec3_t vector1 = {3, 3, 3};
+    // vec3_t *vecptr = &vector1;
+
+    // float len1 = sqrt(vecptr->x * vecptr->x + vecptr->y * vecptr->y + vecptr->z * vecptr->z);
+    // float len2 = vec3_length(*vecptr);
+    // printf("length 1: %f\n", len1);
+    // printf("length 2: %f\n", len2);
+}
+
 void setup(void)
 {
     printf("Starting setup\n");
@@ -89,6 +100,7 @@ bool is_facing_back(vec3_t vertices[], vec3_t camera)
         thumb: normal
     */
     vec3_t normal = vec3_cross(vector_ab, vector_ac);
+    vec3_normalize(&normal);
 
     // find ray from A to camera
     vec3_t camera_ray = vec3_sub(camera, vector_a);
@@ -217,7 +229,7 @@ int print_current_dir(void)
 
 int main(void)
 {
-
+    playground();
     IS_RUNNING = initialize_window();
     setup();
     while (IS_RUNNING)

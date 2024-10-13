@@ -5,6 +5,7 @@
     "display.h": "c",
     "vector.h": "c",
     "typeinfo": "c",
-    "array": "cpp"
+    "array": "cpp",
+    "cmath": "c"
   }
 }
