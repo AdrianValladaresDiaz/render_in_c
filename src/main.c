@@ -12,7 +12,7 @@ int previous_frame_time = 0;
 triangle_t *triangles_to_render = NULL;
 vec2_t projected_points[N_POINTS];
 float FOV_FACTOR = 400;
-vec3_t camera_position = {.x = 0, .y = 0, .z = 5};
+vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
 uint32_t drawing_color = 0xFFFFFFFF;
 
 void setup(void)
@@ -42,13 +42,13 @@ void process_input(void)
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        fprintf(stdout, "%s\n", SDL_GetKeyName(event.key.keysym.sym));
         switch (event.type)
         {
         case SDL_QUIT:
             IS_RUNNING = false;
             break;
         case SDL_KEYDOWN:
+            fprintf(stdout, "%s\n", SDL_GetKeyName(event.key.keysym.sym));
             if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_a)
             {
                 IS_RUNNING = false;
@@ -75,11 +75,39 @@ vec2_t project_vec3_to_vec2(vec3_t point)
     return projection;
 }
 
+bool is_facing_back(vec3_t vertices[], vec3_t camera)
+{
+    vec3_t vector_a = vertices[0]; /*  A  */
+    vec3_t vector_b = vertices[1]; /* / \ */
+    vec3_t vector_c = vertices[2]; /*C   B*/
+
+    vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+    vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+    /* left-handed coordinate system (so positive z is *closer* to the screen),
+        index finger: AB
+        middle finger: AC
+        thumb: normal
+    */
+    vec3_t normal = vec3_cross(vector_ab, vector_ac);
+
+    // find ray from A to camera
+    vec3_t camera_ray = vec3_sub(camera, vector_a);
+
+    // find alignment between camera ray and normal
+    float alignment = vec3_dot(normal, camera_ray);
+
+    if (alignment >= 0) // facing front
+    {
+        return false;
+    }
+    return true;
+}
+
 void update(void)
 {
-    // How much time needs to pass to the time between execuions is FRAME_TARGET_TIME?
+    // How much time needs to pass so the time between execuions is FRAME_TARGET_TIME?
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
-    // Only delay executuion if the program is running too fast.
+    // Only delay execution if the program is running too fast.
     if (time_to_wait > 0)
     {
         SDL_Delay(time_to_wait);
@@ -87,32 +115,46 @@ void update(void)
     previous_frame_time = SDL_GetTicks();
 
     triangles_to_render = NULL; // reinitialize the triangle array
-    triangle_t projected_triangle;
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
 
-    // loop over all cube triangle faces
+    // loop over all faces(triangles) in mesh
     for (int i = 0; i < array_length(mesh.faces); i++)
     {
-        // get vertices (points) that construe the face
+        // get vertices (points) that construe the  current face
         vec3_t face_vertices[3] = {
             mesh.vertices[mesh.faces[i].a - 1], // mesh faces are NOT 0-indexed, start at 1
             mesh.vertices[mesh.faces[i].b - 1],
             mesh.vertices[mesh.faces[i].c - 1]};
 
-        // Apply transforms to each face
-        for (int k = 0; k < 3; k++)
+        // Apply transforms to current face
+        vec3_t transformed_vertices[3];
+        for (int j = 0; j < 3; j++)
         {
-            vec3_t transformed_vertex = face_vertices[k];
+            vec3_t transformed_vertex = face_vertices[j];
             transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
             transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // Move vertex away from screen
-            transformed_vertex.z -= camera_position.z;
+            transformed_vertex.z += 2.5;
 
+            // Save the transform
+            transformed_vertices[j] = transformed_vertex;
+        }
+
+        // // Cull back-facing faces
+        if (is_facing_back(transformed_vertices, camera_position) == true)
+        {
+            continue; // go to next face in the loop
+        }
+
+        // Project vertices onto screen plane
+        triangle_t projected_triangle;
+        for (int k = 0; k < 3; k++)
+        {
             // Project current vertex as a triangle
-            vec2_t projected_point = project_vec3_to_vec2(transformed_vertex);
+            vec2_t projected_point = project_vec3_to_vec2(transformed_vertices[k]);
 
             // Scale and translate to middle of screen
             projected_point.x += WINDOW_WIDTH / 2;
@@ -153,9 +195,9 @@ void render(void)
 // Frees dynamically allocated stuff
 void free_resources(void)
 {
-    free(mesh.faces);
-    free(mesh.vertices);
     free(COLOR_BUFFER);
+    array_free(mesh.faces);
+    array_free(mesh.vertices);
 }
 
 int print_current_dir(void)
@@ -186,6 +228,5 @@ int main(void)
     }
     destroy_window();
     free_resources();
-    printf("hi");
     return 0;
 }
