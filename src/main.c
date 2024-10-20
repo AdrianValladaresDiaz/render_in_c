@@ -17,13 +17,6 @@ uint32_t drawing_color = 0xFFFFFFFF;
 
 void playground(void)
 {
-    // vec3_t vector1 = {3, 3, 3};
-    // vec3_t *vecptr = &vector1;
-
-    // float len1 = sqrt(vecptr->x * vecptr->x + vecptr->y * vecptr->y + vecptr->z * vecptr->z);
-    // float len2 = vec3_length(*vecptr);
-    // printf("length 1: %f\n", len1);
-    // printf("length 2: %f\n", len2);
 }
 
 void setup(void)
@@ -185,7 +178,7 @@ void render(void)
     for (int i = 0; i < array_length(triangles_to_render); i++)
     {
         triangle_t triangle = triangles_to_render[i];
-        draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color);
+        draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color); // delete these?
         draw_rectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, drawing_color);
         draw_rectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, drawing_color);
         draw_triangle(
@@ -196,11 +189,20 @@ void render(void)
             triangle.points[2].x,
             triangle.points[2].y,
             drawing_color);
+        // draw_filled_triangle(
+        //     triangle.points[0].x,
+        //     triangle.points[0].y,
+        //     triangle.points[1].x,
+        //     triangle.points[1].y,
+        //     triangle.points[2].x,
+        //     triangle.points[2].y,
+        //     0xFFFF9900);
     }
-
-    array_free(triangles_to_render); // Free the tringle array every frame
-    render_color_buffer();           // Put on screen whatever is in the color_buffer -> texture -> renderer.
-    clear_color_buffer(0x00000000);  // Set entire buffer to yellow as default
+    draw_filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFF9900);
+    draw_triangle(300, 100, 50, 400, 500, 700, 0xFFFF0000); // DELETE ME
+    array_free(triangles_to_render);                        // Free the tringle array every frame
+    render_color_buffer();                                  // Put on screen whatever is in the color_buffer -> texture -> renderer.
+    clear_color_buffer(0x00000000);                         // Set entire buffer to yellow as default
     SDL_RenderPresent(RENDERER);
 }
 
@@ -229,9 +231,9 @@ int print_current_dir(void)
 
 int main(void)
 {
-    playground();
     IS_RUNNING = initialize_window();
     setup();
+    playground();
     while (IS_RUNNING)
     {
         process_input();
