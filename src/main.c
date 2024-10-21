@@ -37,7 +37,8 @@ void setup(void)
 
     SDL_SetRenderDrawColor(RENDERER, 255, 0, 0, 255);
     SDL_RenderClear(RENDERER);
-    load_obj_data("./assets/f22.obj");
+    // load_obj_data("./assets/f22.obj");
+    load_obj_data("./assets/cube.obj");
     printf("Setup Done\n");
 };
 
@@ -197,12 +198,23 @@ void render(void)
         //     triangle.points[2].x,
         //     triangle.points[2].y,
         //     0xFFFF9900);
+        // printf("triangle: %f,%f,%f,%f,%f,%f\n",
+        //        triangle.points[0].x,
+        //        triangle.points[0].y,
+        //        triangle.points[1].x,
+        //        triangle.points[1].y,
+        //        triangle.points[2].x,
+        //        triangle.points[2].y);
     }
     draw_filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFF9900);
-    draw_triangle(300, 100, 50, 400, 500, 700, 0xFFFF0000); // DELETE ME
-    array_free(triangles_to_render);                        // Free the tringle array every frame
-    render_color_buffer();                                  // Put on screen whatever is in the color_buffer -> texture -> renderer.
-    clear_color_buffer(0x00000000);                         // Set entire buffer to yellow as default
+    // draw_filled_triangle(675.590698, 796.086975, 1202.130615, 816.842712, 744.614990, 223.648193, 0xFFFF9900);
+    draw_filled_triangle(744.614990, 223.648193, 1202.130615, 816.842712, 1260.996948, 328.647217, 0xFFFF9900);
+    draw_triangle(744.614990, 223.648193, 1202.130615, 816.842712, 1260.996948, 328.647217, 0xFFFF0000);
+
+    // draw_triangle(300, 100, 50, 400, 500, 700, 0xFFFF0000); // DELETE ME
+    array_free(triangles_to_render); // Free the tringle array every frame
+    render_color_buffer();           // Put on screen whatever is in the color_buffer -> texture -> renderer.
+    clear_color_buffer(0x00000000);  // Set entire buffer to yellow as default
     SDL_RenderPresent(RENDERER);
 }
 
