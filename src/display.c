@@ -74,7 +74,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
 {
     int delta_x = x1 - x0;
     int delta_y = y1 - y0;
-    int side_length = delta_x > delta_y ? abs(delta_x) : abs(delta_y);
+    int side_length = abs(delta_x) > abs(delta_y) ? abs(delta_x) : abs(delta_y);
 
     // find how much to increment x and y each time
     float x_increment = delta_x / (float)side_length; // casted to float otherwise C returns an int
@@ -90,6 +90,16 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
         current_y += y_increment;
     }
 }
+
+// crazyness from the past:
+// change this line in draw_line:
+// int side_length = delta_x > delta_y ? abs(delta_x) : abs(delta_y);
+// then run this loop
+// for (int i = 200; i < 800; i++)
+// {
+
+//     draw_line(1260, 328, 824, i, 0xFFFF9900);
+// }
 
 void draw_grid(uint32_t color)
 {
