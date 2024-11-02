@@ -14,6 +14,21 @@ vec2_t projected_points[N_POINTS];
 float FOV_FACTOR = 400;
 vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
 uint32_t drawing_color = 0xFFFFFFFF;
+typedef enum
+{
+    WIREFRAME,
+    WIREFRAME_CHRISTMAS,
+    SOLID,
+    SOLID_WIREFRAME
+} render_mode;
+typedef enum
+{
+    ENABLED,
+    DISABLED
+} back_face_culling;
+
+render_mode selected_render_mode = SOLID;
+back_face_culling back_face_culling_state = ENABLED;
 
 void playground(void)
 {
@@ -59,13 +74,41 @@ void process_input(void)
                 IS_RUNNING = false;
             }
             if (event.key.keysym.sym == SDLK_DOWN)
+            {
                 drawing_color = 0xFFFF0000;
+            }
             if (event.key.keysym.sym == SDLK_UP)
+            {
                 drawing_color = 0xFF00FF00;
+            }
             if (event.key.keysym.sym == SDLK_LEFT)
+            {
                 drawing_color = 0xFF0000FF;
-            if (event.key.keysym.sym == SDLK_DOWN)
-                drawing_color = 0xFFFF0000;
+            }
+            if (event.key.keysym.sym == SDLK_1)
+            {
+                selected_render_mode = WIREFRAME_CHRISTMAS;
+            }
+            if (event.key.keysym.sym == SDLK_2)
+            {
+                selected_render_mode = WIREFRAME;
+            }
+            if (event.key.keysym.sym == SDLK_3)
+            {
+                selected_render_mode = SOLID;
+            }
+            if (event.key.keysym.sym == SDLK_4)
+            {
+                selected_render_mode = SOLID_WIREFRAME;
+            }
+            if (event.key.keysym.sym == SDLK_c)
+            {
+                back_face_culling_state = ENABLED;
+            }
+            if (event.key.keysym.sym == SDLK_d)
+            {
+                back_face_culling_state = DISABLED;
+            }
             break;
         default:
             break;
@@ -178,6 +221,20 @@ void render(void)
 
     for (int i = 0; i < array_length(triangles_to_render); i++)
     {
+        switch (selected_render_mode)
+        {
+        case WIREFRAME:
+            break;
+        case WIREFRAME_CHRISTMAS:
+            break;
+        case SOLID:
+            break;
+        case SOLID_WIREFRAME:
+            break;
+
+        default:
+            break;
+        }
         triangle_t triangle = triangles_to_render[i];
         draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color); // delete these?
         draw_rectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, drawing_color);
@@ -206,12 +263,7 @@ void render(void)
         //        triangle.points[2].x,
         //        triangle.points[2].y);
     }
-    // draw_filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFF9900);
-    // draw_filled_triangle(675.590698, 796.086975, 1202.130615, 816.842712, 744.614990, 223.648193, 0xFFFF9900);
-    // draw_filled_triangle(744.614990, 223.648193, 1202.130615, 816.842712, 1260.996948, 328.647217, 0xFFFF9900);
-    // draw_triangle(744.614990, 223.648193, 1202.130615, 816.842712, 1260.996948, 328.647217, 0xFFFF0000);
 
-    // draw_triangle(300, 100, 50, 400, 500, 700, 0xFFFF0000); // DELETE ME
     array_free(triangles_to_render); // Free the tringle array every frame
     render_color_buffer();           // Put on screen whatever is in the color_buffer -> texture -> renderer.
     clear_color_buffer(0x00000000);  // Set entire buffer to yellow as default

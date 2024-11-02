@@ -90,6 +90,6 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
         // Fill flat bottom triangle
         fill_flat_bottom_triangle(x0, y0, x1, y1, mx, y1, color);
         // Fill flat top triangle
-        fill_flat_top_triangle(x1, y1, mx, y1, x2, y2, 0xFF889900);
+        fill_flat_top_triangle(x1, y1, mx, y1, x2, y2, color);
     }
 };
