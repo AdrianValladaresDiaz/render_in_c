@@ -28,7 +28,7 @@ typedef enum
 } back_face_culling;
 
 render_mode selected_render_mode = SOLID;
-back_face_culling back_face_culling_state = ENABLED;
+back_face_culling back_face_culling_mode = ENABLED;
 
 void playground(void)
 {
@@ -52,8 +52,8 @@ void setup(void)
 
     SDL_SetRenderDrawColor(RENDERER, 255, 0, 0, 255);
     SDL_RenderClear(RENDERER);
-    // load_obj_data("./assets/f22.obj");
-    load_obj_data("./assets/cube.obj");
+    load_obj_data("./assets/f22.obj");
+    // load_obj_data("./assets/cube.obj");
     printf("Setup Done\n");
 };
 
@@ -68,7 +68,7 @@ void process_input(void)
             IS_RUNNING = false;
             break;
         case SDL_KEYDOWN:
-            fprintf(stdout, "%s\n", SDL_GetKeyName(event.key.keysym.sym));
+            // fprintf(stdout, "%s\n", SDL_GetKeyName(event.key.keysym.sym));
             if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_a)
             {
                 IS_RUNNING = false;
@@ -88,26 +88,32 @@ void process_input(void)
             if (event.key.keysym.sym == SDLK_1)
             {
                 selected_render_mode = WIREFRAME_CHRISTMAS;
+                fprintf(stdout, "Rendering mode: WIREFRAME_CHRISTMAS\n");
             }
             if (event.key.keysym.sym == SDLK_2)
             {
                 selected_render_mode = WIREFRAME;
+                fprintf(stdout, "Rendering mode: WIREFRAME\n");
             }
             if (event.key.keysym.sym == SDLK_3)
             {
                 selected_render_mode = SOLID;
+                fprintf(stdout, "Rendering mode: SOLID\n");
             }
             if (event.key.keysym.sym == SDLK_4)
             {
                 selected_render_mode = SOLID_WIREFRAME;
+                fprintf(stdout, "Rendering mode: SOLID_WIREFRAME\n");
             }
             if (event.key.keysym.sym == SDLK_c)
             {
-                back_face_culling_state = ENABLED;
+                back_face_culling_mode = ENABLED;
+                fprintf(stdout, "Back face culling ENABLED\n");
             }
             if (event.key.keysym.sym == SDLK_d)
             {
-                back_face_culling_state = DISABLED;
+                back_face_culling_mode = DISABLED;
+                fprintf(stdout, "Back face culling DISABLED\n");
             }
             break;
         default:
@@ -193,7 +199,7 @@ void update(void)
         }
 
         // // Cull back-facing faces
-        if (is_facing_back(transformed_vertices, camera_position) == true)
+        if (back_face_culling_mode == ENABLED && is_facing_back(transformed_vertices, camera_position) == true)
         {
             continue; // go to next face in the loop
         }
@@ -214,31 +220,11 @@ void update(void)
     };
 };
 
-void render(void)
+void render_wireframe(triangle_t *triangles, uint32_t color)
 {
-    // Set screen to RED, on start the memory may be dirty from older memory allocations.
-    // draw_grid(0x10FF0000);
-
-    for (int i = 0; i < array_length(triangles_to_render); i++)
+    for (int i = 0; i < array_length(triangles); i++)
     {
-        switch (selected_render_mode)
-        {
-        case WIREFRAME:
-            break;
-        case WIREFRAME_CHRISTMAS:
-            break;
-        case SOLID:
-            break;
-        case SOLID_WIREFRAME:
-            break;
-
-        default:
-            break;
-        }
-        triangle_t triangle = triangles_to_render[i];
-        draw_rectangle(triangle.points[0].x, triangle.points[0].y, 3, 3, drawing_color); // delete these?
-        draw_rectangle(triangle.points[1].x, triangle.points[1].y, 3, 3, drawing_color);
-        draw_rectangle(triangle.points[2].x, triangle.points[2].y, 3, 3, drawing_color);
+        triangle_t triangle = triangles[i];
         draw_triangle(
             triangle.points[0].x,
             triangle.points[0].y,
@@ -246,7 +232,26 @@ void render(void)
             triangle.points[1].y,
             triangle.points[2].x,
             triangle.points[2].y,
-            drawing_color);
+            color);
+    }
+}
+
+void render_vertices(triangle_t *triangles, uint32_t color, int size)
+{
+    for (int i = 0; i < array_length(triangles); i++)
+    {
+        triangle_t triangle = triangles[i];
+        draw_rectangle(triangle.points[0].x, triangle.points[0].y, size, size, drawing_color);
+        draw_rectangle(triangle.points[1].x, triangle.points[1].y, size, size, drawing_color);
+        draw_rectangle(triangle.points[2].x, triangle.points[2].y, size, size, drawing_color);
+    }
+}
+
+void render_solids(triangle_t *triangles, uint32_t color)
+{
+    for (int i = 0; i < array_length(triangles); i++)
+    {
+        triangle_t triangle = triangles_to_render[i];
         draw_filled_triangle(
             triangle.points[0].x,
             triangle.points[0].y,
@@ -254,14 +259,33 @@ void render(void)
             triangle.points[1].y,
             triangle.points[2].x,
             triangle.points[2].y,
-            0xFFFF9900);
-        // printf("triangle: %f,%f,%f,%f,%f,%f\n",
-        //        triangle.points[0].x,
-        //        triangle.points[0].y,
-        //        triangle.points[1].x,
-        //        triangle.points[1].y,
-        //        triangle.points[2].x,
-        //        triangle.points[2].y);
+            color);
+    }
+}
+
+void render(void)
+{
+    // Set screen to RED, on start the memory may be dirty from older memory allocations.
+    // draw_grid(0x10FF0000);
+    switch (selected_render_mode)
+    {
+    case WIREFRAME:
+        render_wireframe(triangles_to_render, drawing_color);
+        break;
+    case WIREFRAME_CHRISTMAS:
+        render_wireframe(triangles_to_render, drawing_color);
+        render_vertices(triangles_to_render, drawing_color, 10);
+        break;
+    case SOLID:
+        render_solids(triangles_to_render, drawing_color);
+        break;
+    case SOLID_WIREFRAME:
+        render_solids(triangles_to_render, drawing_color);
+        render_wireframe(triangles_to_render, 0x00000000);
+        break;
+
+    default:
+        break;
     }
 
     array_free(triangles_to_render); // Free the tringle array every frame
